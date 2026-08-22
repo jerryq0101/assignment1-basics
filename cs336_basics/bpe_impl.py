@@ -38,13 +38,11 @@ class BPE:
         PAT = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
 
         # Split using the regex on each smaller section
-        final_split_arr = []
+        # Optimization for RAM
+        counts = collections.Counter()
         for element in str_arr:
-            final_split_arr.extend([m.group() for m in re.finditer(PAT, element)])
-
-        # Count how many of each individual thing exists
-        # Format it into a dict[tuple(bytes), int]
-        counts = collections.Counter(final_split_arr)
+            counts.update((m.group() for m in re.finditer(PAT, element)))
+        
         byte_based_counts = {}
         for (word, count) in counts.items():
             word_in_utf8 = word.encode("utf-8")
