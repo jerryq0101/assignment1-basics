@@ -49,3 +49,15 @@ line-length = 120
 [tool.ruff.lint]
 extend-select = ["UP"]
 ignore = ["F722"]
+
+[[tool.uv.index]]
+name= "pytorch-cuda"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cuda", marker = "sys_platform == 'win32'"},
+]
+
+

@@ -22,6 +22,7 @@ class TrainingModule():
 
     def train_something(self, experiment_num: int, desired_device: str, hyperparam_updates: dict):
         # --- data ---
+        print(torch.__version__)
         train_path     = "data/tinystories_train.npy"
         val_path       = "data/tinystories_val.npy"
         device         = "mps" if torch.backends.mps.is_available() else "cpu"
