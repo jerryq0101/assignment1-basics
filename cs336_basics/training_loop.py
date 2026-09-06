@@ -234,26 +234,26 @@ if __name__ == "__main__":
     })
 
     modelModule2 = TrainingModule()
-    modelModule2.train_something(experiment_num=1, desired_device="cuda", hyperparam_updates={
+    modelModule2.train_something(experiment_num=2, desired_device="cuda", hyperparam_updates={
         "lr_max":1e-3,
         "lr_min": 1e-4,
     })
 
     modelModule3 = TrainingModule()
-    modelModule3.train_something(experiment_num=1, desired_device="cuda", hyperparam_updates={
+    modelModule3.train_something(experiment_num=3, desired_device="cuda", hyperparam_updates={
         "lr_max":1e-2,
         "lr_min": 1e-3,
     })
 
 
     modelModule4 = TrainingModule()
-    modelModule4.train_something(experiment_num=2, desired_device="cuda", hyperparam_updates={
+    modelModule4.train_something(experiment_num=4, desired_device="cuda", hyperparam_updates={
         "lr_max":1e-1,
         "lr_min":1e-2
     })
 
     modelModule5 = TrainingModule()
-    modelModule5.train_something(experiment_num=2, desired_device="cuda", hyperparam_updates={
+    modelModule5.train_something(experiment_num=5, desired_device="cuda", hyperparam_updates={
         "lr_max":1e0,
         "lr_min":1e-1
     })
