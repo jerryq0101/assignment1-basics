@@ -17,15 +17,17 @@ class TrainingStatsUtil():
         elapsed_seconds = stats[:, 2]
 
         # Do the loss vs steps
+        plt.figure()
         plt.plot(iterations, val_losses)
         plt.xlabel("Gradient Step")
         plt.ylabel("Val Loss (Eval)")
         plt.savefig(f'exp_graphs/exp_{experiment_num}_step_loss.png')
-        plt.figure()
+        plt.close()
 
         # Loss vs time
+        plt.figure()
         plt.plot(elapsed_seconds, val_losses)
         plt.xlabel("Elapsed time (sec)")
         plt.ylabel("Val losses (Eval)")
         plt.savefig(f'exp_graphs/exp_{experiment_num}_time_loss.png')
-
+        plt.close()

@@ -20,11 +20,14 @@ class TrainingModule():
     def __init__(self):
         pass
 
-    def train_something(self, experiment_num: int):
+    def train_something(self, experiment_num: int, desired_device: str, hyperparam_updates: dict):
         # --- data ---
         train_path     = "data/tinystories_train.npy"
         val_path       = "data/tinystories_val.npy"
         device         = "mps" if torch.backends.mps.is_available() else "cpu"
+        if desired_device  == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        print("Chosen device: ", device)
 
         os.makedirs("checkpoints", exist_ok=True)
         os.makedirs("exp_logs", exist_ok=True)
@@ -72,8 +75,8 @@ class TrainingModule():
         val_data = np.load(val_path, mmap_mode="r")
         
         checkpoint_src = None
-        if os.path.exists("checkpoints/ckpt_latest.pt"):
-            checkpoint_src = "checkpoints/ckpt_latest.pt"
+        if os.path.exists(f"checkpoints/ckpt_exp{experiment_num}_latest.pt"):
+            checkpoint_src = f"checkpoints/ckpt_exp{experiment_num}_latest.pt"
 
         # Can construct first on CPU
         #  and then let .to(device) sweep the whole registered tree across
@@ -95,7 +98,7 @@ class TrainingModule():
         start = 0
         checkpoint_util = CheckpointingModule()
 
-        # Works to straight up 
+        # Load the checkpoint
         if checkpoint_src is not None:
             (ckpt_start, ckpt_hyper, training_time_so_far) = checkpoint_util.load_checkpoint(src=checkpoint_src, model=model, optimizer=opt)
             hyperparams = ckpt_hyper
@@ -103,7 +106,10 @@ class TrainingModule():
             existing_time = training_time_so_far
             print("Loaded from checkpoint! Starting iteration at: ", start)
             assert(start is not None)
-        
+        # Update hyperparameters if there are fields that we want to change
+        if hyperparam_updates is not None:
+            hyperparams.update(hyperparam_updates)
+
 
         lr_util = CosineLearningRateSchedule()
         data_loading_util = DataLoadingModule()
@@ -153,9 +159,9 @@ class TrainingModule():
                 existing_time = new_accumulated_time
                 time_start = time.time()
                 if eval_loss_curr < best_eval_loss:
-                    checkpoint_util.save_checkpoint(model=model, optimizer=opt, iteration=it, hyper=hyperparams,out=f"checkpoints/ckpt_best_eval.pt", training_time=new_accumulated_time)
+                    checkpoint_util.save_checkpoint(model=model, optimizer=opt, iteration=it, hyper=hyperparams,out=f"checkpoints/ckpt_exp{experiment_num}_best_eval.pt", training_time=new_accumulated_time)
                     best_eval_loss = eval_loss_curr
-                checkpoint_util.save_checkpoint(model=model, optimizer=opt, iteration=it, hyper=hyperparams,out=f"checkpoints/ckpt_latest.pt", training_time=new_accumulated_time)
+                checkpoint_util.save_checkpoint(model=model, optimizer=opt, iteration=it, hyper=hyperparams,out=f"checkpoints/ckpt_exp{experiment_num}_latest.pt", training_time=new_accumulated_time)
                 print("\nFinished saving checkpoint\n")
                 print("Saving logs: \n")
                 log_fd.write(f"{it}, {eval_loss_curr}, {new_accumulated_time}\n")
@@ -208,7 +214,7 @@ if __name__ == "__main__":
     tokenizer = BPE.from_files("data/tinystories_vocab.pkl", "data/tinystories_merges.pkl", ["<|endoftext|>"])
 
     # If the train and val encodings don't already exist, then convert
-    if not os.path.exists("data/tinystores_val.npy"):
+    if not os.path.exists("data/tinystories_val.npy"):
         # Encode the train and eval datasets
         for split, raw in RAW.items():
             out = f"data/tinystories_{split}.npy"
@@ -218,13 +224,35 @@ if __name__ == "__main__":
                 assert ids.max() < 10000, f"{split}: bad id {ids.max()}"
                 np.save(out, ids)
 
+    # Already have done tokenization, do the experiment
+    # Weird one
+    modelModule1 = TrainingModule()
+    modelModule1.train_something(experiment_num=1, desired_device="cuda", hyperparam_updates={
+        "lr_max":1e-2,
+        "lr_min": 1e-5,
+    })
 
-    modelModule = TrainingModule()
-    modelModule.train_something(experiment_num=1)
-    print("Generated output from the model: ", 
-          modelModule.generate(tokenizer=tokenizer, prompt="I love donuts, it is a super delicious treat!", max_new_tokens=500, temperature=0.2, top_p=0.8))
-    
+    modelModule2 = TrainingModule()
+    modelModule2.train_something(experiment_num=1, desired_device="cuda", hyperparam_updates={
+        "lr_max":1e-3,
+        "lr_min": 1e-4,
+    })
 
-    # TODO
-    # Better hyperparameter selection for this setup
+    modelModule3 = TrainingModule()
+    modelModule3.train_something(experiment_num=1, desired_device="cuda", hyperparam_updates={
+        "lr_max":1e-2,
+        "lr_min": 1e-3,
+    })
 
+
+    modelModule4 = TrainingModule()
+    modelModule4.train_something(experiment_num=2, desired_device="cuda", hyperparam_updates={
+        "lr_max":1e-1,
+        "lr_min":1e-2
+    })
+
+    modelModule5 = TrainingModule()
+    modelModule5.train_something(experiment_num=2, desired_device="cuda", hyperparam_updates={
+        "lr_max":1e0,
+        "lr_min":1e-1
+    })
