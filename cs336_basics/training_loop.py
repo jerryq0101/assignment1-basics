@@ -168,6 +168,7 @@ class TrainingModule():
                 log_fd.write(f"{it}, {eval_loss_curr}, {new_accumulated_time}\n")
                 log_fd.flush()
                 print("Finished saving logs")
+                print("Max  memory Allocated VRAM: ", torch.cuda.max_memory_allocated())
 
         log_fd.close()
 
@@ -228,32 +229,47 @@ if __name__ == "__main__":
     # Already have done tokenization, do the experiment
     # Weird one
     modelModule1 = TrainingModule()
-    modelModule1.train_something(experiment_num=1, desired_device="cuda", hyperparam_updates={
-        "lr_max":1e-2,
-        "lr_min": 1e-5,
+    modelModule1.train_something(experiment_num=6, desired_device="cuda", hyperparam_updates={
+        "batch_size":64
     })
 
     modelModule2 = TrainingModule()
-    modelModule2.train_something(experiment_num=2, desired_device="cuda", hyperparam_updates={
-        "lr_max":1e-3,
-        "lr_min": 1e-4,
+    modelModule2.train_something(experiment_num=7, desired_device="cuda", hyperparam_updates={
+        "batch_size": 32
     })
 
     modelModule3 = TrainingModule()
-    modelModule3.train_something(experiment_num=3, desired_device="cuda", hyperparam_updates={
-        "lr_max":1e-2,
-        "lr_min": 1e-3,
+    modelModule3.train_something(experiment_num=8, desired_device="cuda", hyperparam_updates={
+        "batch_size": 16
     })
-
 
     modelModule4 = TrainingModule()
-    modelModule4.train_something(experiment_num=4, desired_device="cuda", hyperparam_updates={
-        "lr_max":1e-1,
-        "lr_min":1e-2
+    modelModule4.train_something(experiment_num=9, desired_device="cuda", hyperparam_updates={
+        "batch_size": 8
     })
 
+
     modelModule5 = TrainingModule()
-    modelModule5.train_something(experiment_num=5, desired_device="cuda", hyperparam_updates={
-        "lr_max":1e0,
-        "lr_min":1e-1
+    modelModule5.train_something(experiment_num=10, desired_device="cuda", hyperparam_updates={
+        "batch_size": 4
+    })
+
+    modelModule6 = TrainingModule()
+    modelModule6.train_something(experiment_num=11, desired_device="cuda", hyperparam_updates={
+        "batch_size": 2
+    })
+
+    modelModule7 = TrainingModule()
+    modelModule7.train_something(experiment_num=12, desired_device="cuda", hyperparam_updates={
+        "batch_size": 1
+    })
+
+    modelModule8 = TrainingModule()
+    modelModule8.train_something(experiment_num=13, desired_device="cuda", hyperparam_updates={
+        "batch_size": 72
+    })
+
+    modelModule9 = TrainingModule()
+    modelModule9.train_something(experiment_num=14, desired_device="cuda", hyperparam_updates={
+        "batch_size": 39
     })
