@@ -316,6 +316,9 @@ if __name__ == "__main__":
     modelModule2 = TrainingModule()
     modelModule2.train_something(experiment_num="postnorm", desired_device="cuda", hyperparam_updates={}, exp_title="Running using Post Norm Scheme in Transformer block")
 
+    modelModule2 = TrainingModule()
+    modelModule2.train_something(experiment_num="nope", desired_device="cuda", hyperparam_updates={}, exp_title="Running using no RoPE to see training perf")
+
     # modelModule1 = TrainingModule()
     # modelModule1.train_something(experiment_num="3e-3lr", desired_device="cuda", hyperparam_updates={
     #     "lr_max": 3e-3,
