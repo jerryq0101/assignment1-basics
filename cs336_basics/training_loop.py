@@ -309,11 +309,12 @@ if __name__ == "__main__":
     # Weird one
 
     # Try doing training without RMSNorm
-    modelModule1 = TrainingModule()
-    modelModule1.train_something(experiment_num="removermsnorm", desired_device="cuda", hyperparam_updates={
-    }, exp_title="Running using removed RMSNorm with same params")
+    # modelModule1 = TrainingModule()
+    # modelModule1.train_something(experiment_num="removermsnorm", desired_device="cuda", hyperparam_updates={
+    # }, exp_title="Running using removed RMSNorm with same params")
 
-
+    modelModule2 = TrainingModule()
+    modelModule2.train_something(experiment_num="postnorm", desired_device="cuda", hyperparam_updates={}, exp_title="Running using Post Norm Scheme in Transformer block")
 
     # modelModule1 = TrainingModule()
     # modelModule1.train_something(experiment_num="3e-3lr", desired_device="cuda", hyperparam_updates={

@@ -31,10 +31,8 @@ class TransformerBlockModule(torch.nn.Module):
 
     def forward(self, x: torch.Tensor):
         # normed_x = self.norm1.forward(x)
-        first_add_pt = x + self.mha.forward_with_rope(x)
+        first_add_pt = self.norm1.forward(x + self.mha.forward_with_rope(x))
         # normed_first_add_pt = self.norm2.forward(first_add_pt)
-        second_add_pt = first_add_pt + self.ffn.forward(first_add_pt)
+        second_add_pt = self.norm2.forward(first_add_pt + self.ffn.forward(first_add_pt))
         return second_add_pt
 
-    def norm(self, norm_function, x):
-        norm_function(x)
