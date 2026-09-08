@@ -18,7 +18,63 @@ from cs336_basics.training_loop_graphing import TrainingStatsUtil
 
 class TrainingModule():
     def __init__(self):
-        pass
+        self.model = None
+
+    def load_model(self, experiment_num: int, device: str): 
+        hyperparams = {
+            # --- model ---
+            "vocab_size": 10000,
+            "context_length": 256,
+            "d_model": 512,
+            "d_ff": 1344,  # ≈ (8/3)·d_model rounded to a multiple of 64,
+            "num_layers": 4,
+            "num_heads": 16,
+            "rope_theta": 10000.0,
+            "rmsnorm_eps": 1e-5,
+            # --- optimizer (AdamW) ---
+            "lr_max": 1e-3,
+            "lr_min": 1e-4,
+            "weight_decay": 0.01,
+            "betas": (0.9, 0.95),
+            "eps": 1e-8,
+            "max_grad_norm": 1.0,
+            # --- schedule / run length ---
+            "max_iters": 5000,
+            "warmup_iters": 1000,
+            "cosine_iters": 5000,  # T_c; usually the full run
+            # --- batching ---
+            "batch_size": 32,
+            # --- logging / eval ---
+            "log_every": 50,
+            "eval_every": 50,
+            "eval_batches": 20,  # batches averaged per val-loss estimate
+        }
+        self.context_length = hyperparams["context_length"]
+        checkpoint_src = None
+        if os.path.exists(f"checkpoints/ckpt_exp{experiment_num}_latest.pt"):
+            checkpoint_src = f"checkpoints/ckpt_exp{experiment_num}_latest.pt"
+
+        # Can construct first on CPU
+        #  and then let .to(device) sweep the whole registered tree across
+        # This works for MPS
+        # For a discrete GPU, doing initialization first in CPU will take up DRAM
+        # Then it will transfer to VRAM. So it might OOO because CPU DRARM might be too small
+        model = TransformerLMModule(vocab_size=hyperparams["vocab_size"], 
+                                    context_length=hyperparams["context_length"],
+                                    d_model=hyperparams["d_model"],
+                                    num_layers=hyperparams["num_layers"],
+                                    num_heads=hyperparams["num_heads"],
+                                    d_ff=hyperparams["d_ff"],
+                                    rope_theta=hyperparams["rope_theta"],
+                                    eps=hyperparams["rmsnorm_eps"]).to(device)
+        self.model = model
+        checkpoint_util = CheckpointingModule()
+        # Load the checkpoint
+        if checkpoint_src is not None:
+            opt = AdamW(params=model.parameters(), lr=hyperparams["lr_max"], weight_decay=hyperparams["weight_decay"], betas=hyperparams["betas"], eps=hyperparams["eps"])
+            (ckpt_start, ckpt_hyper, training_time_so_far) = checkpoint_util.load_checkpoint(src=checkpoint_src, model=model, optimizer=opt)
+            hyperparams = ckpt_hyper
+    
 
     def train_something(self, experiment_num: int, desired_device: str, hyperparam_updates: dict):
         # --- data ---
@@ -177,7 +233,18 @@ class TrainingModule():
 
 
     @torch.no_grad()
-    def generate(self, tokenizer: BPE, prompt: str, max_new_tokens: int, temperature: float = 1.0, top_p: float = 0.9):
+    def generate(self, experiment_num: int, tokenizer: BPE, prompt: str, max_new_tokens: int, temperature: float = 1.0, top_p: float = 0.9):
+        # Load the particular checkpoint as a model
+        # Then I can do generation 
+        if self.model is None:
+            # Check device here
+            device = "cpu"
+            if torch.backends.mps.is_available():
+                device = "mps"
+            if torch.cuda.is_available():
+                device = "cuda"
+            # load from experiment_num's checkpoint
+            self.load_model(experiment_num=experiment_num, device=device)
         device = next(self.model.parameters()).device
         ids = torch.tensor([tokenizer.encode(prompt)], dtype=torch.int64, device=device)  # (1, T)
         eos_id = tokenizer.reverse_lookup["<|endoftext|>".encode("utf-8")]
@@ -226,6 +293,9 @@ if __name__ == "__main__":
                 assert ids.max() < 10000, f"{split}: bad id {ids.max()}"
                 np.save(out, ids)
 
+    model_instance = TrainingModule()
+    model_instance.load_model(1, "mps")
+    print("Sample Inference situation: ", model_instance.generate(1, tokenizer=tokenizer, prompt="Heyo what is going on?", max_new_tokens=500, temperature = 0.2, top_p=0.8))
     # Already have done tokenization, do the experiment
     # Weird one
     modelModule1 = TrainingModule()
