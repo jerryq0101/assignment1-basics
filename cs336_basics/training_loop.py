@@ -76,7 +76,7 @@ class TrainingModule():
             hyperparams = ckpt_hyper
     
 
-    def train_something(self, experiment_num: str, desired_device: str, hyperparam_updates: dict):
+    def train_something(self, experiment_num: str, desired_device: str, hyperparam_updates: dict, exp_title: str):
         # --- data ---
         print(torch.__version__)
         train_path     = "data/tinystories_train.npy"
@@ -229,7 +229,7 @@ class TrainingModule():
         log_fd.close()
 
         # Graph this specific train as we are done
-        TrainingStatsUtil().graph_loss_curve(f"exp_logs/log_{experiment_num}", experiment_num=experiment_num)
+        TrainingStatsUtil().graph_loss_curve(f"exp_logs/log_{experiment_num}", experiment_num=experiment_num, title=exp_title)
 
 
     @torch.no_grad()
@@ -307,11 +307,19 @@ if __name__ == "__main__":
 
     # Already have done tokenization, do the experiment
     # Weird one
+
+    # Try doing training without RMSNorm
     modelModule1 = TrainingModule()
-    modelModule1.train_something(experiment_num="3e-3lr", desired_device="cuda", hyperparam_updates={
-        "lr_max": 3e-3,
-        "lr_min": 3e-4
-    })
+    modelModule1.train_something(experiment_num="removermsnorm", desired_device="cuda", hyperparam_updates={
+    }, exp_title="Running using removed RMSNorm with same params")
+
+
+
+    # modelModule1 = TrainingModule()
+    # modelModule1.train_something(experiment_num="3e-3lr", desired_device="cuda", hyperparam_updates={
+    #     "lr_max": 3e-3,
+    #     "lr_min": 3e-4
+    # }, exp_title="Learning rate set as 3e-3 max's training curve")
 
 
     # modelModule1 = TrainingModule()

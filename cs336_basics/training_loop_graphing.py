@@ -6,7 +6,7 @@ class TrainingStatsUtil():
     def __init__(self):
         pass
 
-    def graph_loss_curve(self, log_path: str, experiment_num: str):
+    def graph_loss_curve(self, log_path: str, experiment_num: str, title: str):
         stats = np.loadtxt(log_path, delimiter=",")
         print(stats.shape)
 
@@ -22,6 +22,7 @@ class TrainingStatsUtil():
         plt.xlabel("Gradient Step")
         plt.ylabel("Val Loss (Eval)")
         plt.savefig(f'exp_graphs/exp_{experiment_num}_step_loss.png')
+        plt.title(label=title)
         plt.close()
 
         # Loss vs time
@@ -30,4 +31,5 @@ class TrainingStatsUtil():
         plt.xlabel("Elapsed time (sec)")
         plt.ylabel("Val losses (Eval)")
         plt.savefig(f'exp_graphs/exp_{experiment_num}_time_loss.png')
+        plt.title(label=title)
         plt.close()
