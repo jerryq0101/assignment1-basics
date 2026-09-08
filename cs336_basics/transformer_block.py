@@ -30,7 +30,11 @@ class TransformerBlockModule(torch.nn.Module):
             self.ffn.linear_3.weight = torch.nn.Parameter(weights["ffn.w3.weight"])
 
     def forward(self, x: torch.Tensor):
-        first_add_pt = x + self.mha.forward_with_rope(self.norm1.forward(x))
-        second_add_pt = first_add_pt + self.ffn.forward(self.norm2.forward(first_add_pt))
+        # normed_x = self.norm1.forward(x)
+        first_add_pt = x + self.mha.forward_with_rope(x)
+        # normed_first_add_pt = self.norm2.forward(first_add_pt)
+        second_add_pt = first_add_pt + self.ffn.forward(first_add_pt)
         return second_add_pt
-    
+
+    def norm(self, norm_function, x):
+        norm_function(x)
