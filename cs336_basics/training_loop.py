@@ -20,7 +20,7 @@ class TrainingModule():
     def __init__(self):
         self.model = None
 
-    def load_model(self, experiment_num: int, device: str): 
+    def load_model(self, experiment_num: str, device: str): 
         hyperparams = {
             # --- model ---
             "vocab_size": 10000,
@@ -76,7 +76,7 @@ class TrainingModule():
             hyperparams = ckpt_hyper
     
 
-    def train_something(self, experiment_num: int, desired_device: str, hyperparam_updates: dict):
+    def train_something(self, experiment_num: str, desired_device: str, hyperparam_updates: dict):
         # --- data ---
         print(torch.__version__)
         train_path     = "data/tinystories_train.npy"
@@ -233,7 +233,7 @@ class TrainingModule():
 
 
     @torch.no_grad()
-    def generate(self, experiment_num: int, tokenizer: BPE, prompt: str, max_new_tokens: int, temperature: float = 1.0, top_p: float = 0.9):
+    def generate(self, experiment_num: str, tokenizer: BPE, prompt: str, max_new_tokens: int, temperature: float = 1.0, top_p: float = 0.9):
         # Load the particular checkpoint as a model
         # Then I can do generation 
         if self.model is None:
@@ -262,8 +262,7 @@ class TrainingModule():
             ids = torch.cat([ids, next_id.view(1, 1)], dim=1)
             if next_id.item() == eos_id:
                 break
-            print ("Current generated text: ", tokenizer.decode(ids[0].tolist()), "\n")
-
+            # print("generated text: ", tokenizer.decode(ids[0].tolist()), "\n")
         return tokenizer.decode(ids[0].tolist())
         
 
@@ -293,53 +292,70 @@ if __name__ == "__main__":
                 assert ids.max() < 10000, f"{split}: bad id {ids.max()}"
                 np.save(out, ids)
 
-    model_instance = TrainingModule()
-    model_instance.load_model(1, "mps")
-    print("Sample Inference situation: ", model_instance.generate(1, tokenizer=tokenizer, prompt="Heyo what is going on?", max_new_tokens=500, temperature = 0.2, top_p=0.8))
+    # model_instance = TrainingModule()
+    # model_instance.load_model(6, "cuda")
+    # print("Sample Inference situation T = 0.2 p = 0.8: ", model_instance.generate(6, tokenizer=tokenizer, prompt="Once upon a time there", max_new_tokens=500, temperature = 0.2, top_p=0.8))
+
+    # print("Sample Inference situation T = 0.7 p = 0.8: ", model_instance.generate(6, tokenizer=tokenizer, prompt="Once upon a time there", max_new_tokens=500, temperature = 0.7, top_p=0.8))
+
+    # print("Sample Inference situation T = 1 p = 0.8: ", model_instance.generate(6, tokenizer=tokenizer, prompt="Once upon a time there", max_new_tokens=500, temperature = 1, top_p=0.8))
+
+    # print("Sample Inference situation T = 0.2 p = 0.95: ", model_instance.generate(6, tokenizer=tokenizer, prompt="Once upon a time there", max_new_tokens=500, temperature = 0.2, top_p=0.95))
+    # print("Sample Inference situation T = 0.2 p = 1.0: ", model_instance.generate(6, tokenizer=tokenizer, prompt="Once upon a time there", max_new_tokens=500, temperature = 0.2, top_p=1))
+
+    
+
     # Already have done tokenization, do the experiment
     # Weird one
     modelModule1 = TrainingModule()
-    modelModule1.train_something(experiment_num=6, desired_device="cuda", hyperparam_updates={
-        "batch_size":64
-    })
-
-    modelModule2 = TrainingModule()
-    modelModule2.train_something(experiment_num=7, desired_device="cuda", hyperparam_updates={
-        "batch_size": 32
-    })
-
-    modelModule3 = TrainingModule()
-    modelModule3.train_something(experiment_num=8, desired_device="cuda", hyperparam_updates={
-        "batch_size": 16
-    })
-
-    modelModule4 = TrainingModule()
-    modelModule4.train_something(experiment_num=9, desired_device="cuda", hyperparam_updates={
-        "batch_size": 8
+    modelModule1.train_something(experiment_num="3e-3lr", desired_device="cuda", hyperparam_updates={
+        "lr_max": 3e-3,
+        "lr_min": 3e-4
     })
 
 
-    modelModule5 = TrainingModule()
-    modelModule5.train_something(experiment_num=10, desired_device="cuda", hyperparam_updates={
-        "batch_size": 4
-    })
+    # modelModule1 = TrainingModule()
+    # modelModule1.train_something(experiment_num=6, desired_device="cuda", hyperparam_updates={
+    #     "batch_size":64
+    # })
 
-    modelModule6 = TrainingModule()
-    modelModule6.train_something(experiment_num=11, desired_device="cuda", hyperparam_updates={
-        "batch_size": 2
-    })
+    # modelModule2 = TrainingModule()
+    # modelModule2.train_something(experiment_num=7, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 32
+    # })
 
-    modelModule7 = TrainingModule()
-    modelModule7.train_something(experiment_num=12, desired_device="cuda", hyperparam_updates={
-        "batch_size": 1
-    })
+    # modelModule3 = TrainingModule()
+    # modelModule3.train_something(experiment_num=8, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 16
+    # })
 
-    modelModule8 = TrainingModule()
-    modelModule8.train_something(experiment_num=13, desired_device="cuda", hyperparam_updates={
-        "batch_size": 72
-    })
+    # modelModule4 = TrainingModule()
+    # modelModule4.train_something(experiment_num=9, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 8
+    # })
 
-    modelModule9 = TrainingModule()
-    modelModule9.train_something(experiment_num=14, desired_device="cuda", hyperparam_updates={
-        "batch_size": 39
-    })
+
+    # modelModule5 = TrainingModule()
+    # modelModule5.train_something(experiment_num=10, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 4
+    # })
+
+    # modelModule6 = TrainingModule()
+    # modelModule6.train_something(experiment_num=11, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 2
+    # })
+
+    # modelModule7 = TrainingModule()
+    # modelModule7.train_something(experiment_num=12, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 1
+    # })
+
+    # modelModule8 = TrainingModule()
+    # modelModule8.train_something(experiment_num=13, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 72
+    # })
+
+    # modelModule9 = TrainingModule()
+    # modelModule9.train_something(experiment_num=14, desired_device="cuda", hyperparam_updates={
+    #     "batch_size": 39
+    # })
