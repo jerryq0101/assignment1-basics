@@ -6,7 +6,7 @@ class TrainingStatsUtil():
     def __init__(self):
         pass
 
-    def graph_loss_curve(self, log_path: str, experiment_num: int):
+    def graph_loss_curve(self, log_path: str, experiment_num: str):
         stats = np.loadtxt(log_path, delimiter=",")
         print(stats.shape)
 
