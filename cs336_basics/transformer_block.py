@@ -2,7 +2,7 @@ import torch.nn
 import einops
 from cs336_basics.rmsnorm_module import RMSNormModule
 from cs336_basics.multihead_attn import MultiheadSelfAttentionModule
-from cs336_basics.pos_ffn import SwiGLUModule
+from cs336_basics.pos_ffn import SwiGLUModule, SiLUModule
 
 class TransformerBlockModule(torch.nn.Module):
     def __init__(self, d_model:int, num_heads: int, d_ff: int, max_seq_len: int, theta: int, eps: int, weights: dict[str, torch.Tensor] = None):
@@ -15,7 +15,7 @@ class TransformerBlockModule(torch.nn.Module):
         self.norm1 = RMSNormModule(d_model, eps=eps)
         self.norm2 = RMSNormModule(d_model, eps=eps)
         self.mha = MultiheadSelfAttentionModule(d_model, num_heads, max_seq_len=max_seq_len, theta=theta)
-        self.ffn = SwiGLUModule(d_model, d_ff)
+        self.ffn = SiLUModule(d_model, d_ff)
 
         if weights is not None:
             # Put weights into each of these things
@@ -31,7 +31,7 @@ class TransformerBlockModule(torch.nn.Module):
 
     def forward(self, x: torch.Tensor):
         normed_x = self.norm1.forward(x)
-        first_add_pt = x + self.mha.forward(normed_x)
+        first_add_pt = x + self.mha.forward_with_rope(normed_x)
         normed_first_add_pt = self.norm2.forward(first_add_pt)
         second_add_pt = first_add_pt + self.ffn.forward(normed_first_add_pt)
         return second_add_pt
